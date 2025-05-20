@@ -9,23 +9,27 @@ Für jeden Schritt gibt es eine mögliche Lösung im Verzeichnis `schritt-xx`.
 
 ## Schritt 01 - Provider azurerm
 
-Als erstes ergänzen wir den Terraform Block, um die Informationen zum Provider `azurerm`:
+Als erstes ergänzen wir den Terraform Block, um die Informationen zum Provider `azurerm`.
+
+<details>
+<summary>Lösungshinweis</summary>
 
 ```terraform
 terraform {
-...
+  required_version = "~> 1.6"
   required_providers {
     azurerm = {
-      source = "hashicorp/azurerm"
+      source  = "hashicorp/azurerm"
       version = "~> 4.0"
     }
   }
-...
 }
 ```
 
-Wir akzeptieren jede Version `4.y.z` mit dem Versions Constraint `~> 4.0`. Diese Flexibilität ist hilfreich beim Einsatz von Module.
-Als nächsten fügen wir die Konfiguration für den Provider hinzu.
+</details>
+<br>
+
+Wir akzeptieren jede Version `4.y.z` mit dem Versions Constraint `~> 4.0`. Diese Flexibilität ist hilfreich beim Einsatz von Module. Als nächsten fügen wir die Konfiguration für den Provider hinzu.
 
 ```terraform
 provider "azurerm" {
@@ -49,9 +53,12 @@ Je nach Art des Login bitte weitere Parameter ergänzen.
 
 **Warum aber überhaupt Umgebungsvariablen einsetzen?**
 Die Verwendung von Umgebungsvariablen erhöht die Flexibilität.
-Z.B. kann für die (lokale) Entwicklung der eigene Account eingesetzt werden, also [Authenticating using the Azure CLI](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/guides/azure_cli), während für die Pipeline [Authenticating using a Service Principal with Open ID Connect](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/guides/service_principal_oidc) zum Einsatz kommen kann. Dabei bleibt der Terraform Code der gleiche.
+Z. B. kann für die (lokale) Entwicklung der eigene Account eingesetzt werden, also [Authenticating using the Azure CLI](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/guides/azure_cli), während für die Pipeline [Authenticating using a Service Principal with Open ID Connect](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/guides/service_principal_oidc) zum Einsatz kommen kann. Dabei bleibt der Terraform Code der gleiche.
 
 Um die Benennung von Ressourcen zu vereinfachen setzen wir auf das Module `naming` ein.
+
+<details>
+<summary>Lösungshinweis</summary>
 
 ```terraform
 module "naming" {
@@ -60,6 +67,12 @@ module "naming" {
   suffix = [ "workshop" ]
 }
 ```
+
+</details>
+<br>
+
+Weitere Informationen:
+- [Dokumentation Naming Modul](https://github.com/Azure/terraform-azurerm-naming)
 
 Nun wollen wir das ganze ausführen. Dafür verwenden wir die folgenden Kommandos:
 
@@ -86,12 +99,18 @@ Weitere Informationen:
 Nun legen wir eine Resource Group an. Dabei verwenden wir als Namen den Wert von `module.naming.resource_group.name_unique`.
 Wir verwenden als Beispiel die Region `West Europe` für die Resource Group:
 
+<details>
+<summary>Lösungshinweis</summary>
+
 ```terraform
 resource "azurerm_resource_group" "this" {
   name     = module.naming.resource_group.name_unique
   location = "West Europe"
 }
 ```
+
+</details>
+<br>
 
 Weitere Informationen:
 
@@ -100,6 +119,16 @@ Weitere Informationen:
 ## Schritt 03 - Storage Account
 
 In diese Resource Group kommt der Storage Account. Als Namen verwenden wir den Wert von `module.naming.storage_account.name_unique`.
+
+```terraform
+resource "azurerm_storage_account" "this" {
+  name                      = module.naming.storage_account.name_unique
+  ...
+}
+```
+
+<details>
+<summary>Lösungshinweis</summary>
 
 ```terraform
 resource "azurerm_storage_account" "this" {
@@ -117,6 +146,8 @@ resource "azurerm_storage_account" "this" {
   infrastructure_encryption_enabled  = true
 }
 ```
+</details>
+<br>
 
 Weitere Informationen:
 
@@ -129,10 +160,22 @@ Zu letzt wollen wir einen Container im Storage Account bereitstellen. Für den N
 ```terraform
 resource "azurerm_storage_container" "this" {
   name                  = module.naming.storage_container.name_unique
+  ...
+}
+```
+
+<details>
+<summary>Lösungshinweis</summary>
+
+```terraform
+resource "azurerm_storage_container" "this" {
+  name                  = module.naming.storage_container.name_unique
   storage_account_id    = azurerm_storage_account.this.id
   container_access_type = "private"
 }
 ```
+</details>
+<br>
 
 Weitere Informationen:
 
@@ -155,6 +198,33 @@ data "azurerm_client_config" "this" {
 ```
 
 Anschliessend wird der Identität (ObjectID) die oben gelisteten Rollen (Reader and Data Access und Storage Blob Data Contributor) auf den Container (Scope) zugewiesen.
+
+<details>
+<summary>Lösungshinweis 1</summary>
+
+```terraform
+resource "azurerm_role_assignment" "reader_and_data_access" {
+  scope                = azurerm_storage_account.this.id
+  role_definition_name = "Reader and Data Access"
+  principal_id         = data.azurerm_client_config.this.object_id
+}
+```
+</details>
+<br>
+
+<details>
+<summary>Lösungshinweis 2</summary>
+
+```terraform
+resource "azurerm_role_assignment" "storage_blob_data_contributor" {
+  scope                = azurerm_storage_container.this.id
+  role_definition_name = "Storage Blob Data Contributor"
+  principal_id         = data.azurerm_client_config.this.object_id
+}
+```
+</details>
+<br>
+
 
 Weitere Information:
 
