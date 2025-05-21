@@ -2,7 +2,8 @@
 
 Nun liegt der Fokus auf Azure DevOps und dem Development Workflow. In dieser Übung werden die Grundlage für den Einsatz von Pull Request (PR) und Deployment via CI/CD-Pipelines gelegt.
 
-Folgende Ziele sind in dieser Aufgabe zu erreichen.
+Folgende Ziele sind in dieser Aufgabe zu erreichen:
+
 1. Erstellung eines neuen Repository in [Azure DevOps](https://dev.azure.com/helsana/CLOUDFOUNDATIONNETWORKING)
 2. Klonen des Repository und Erstellung eines Feature-Branch
 3. Erstellung und Ausführung einer leeren Pipeline
@@ -13,6 +14,7 @@ Das Resultat dieser Aufgabe wird für die Aufgaben 10 und 11 verwendet.
 ## Schritt 01 - Repository erstellen
 
 Das Repository wird manuell via Azure DevOps ertellt.
+
 1. Im Browser das Azure DevOps Projekt [CLOUDFOUNDATIONNETWORKING](https://dev.azure.com/helsana/CLOUDFOUNDATIONNETWORKING) aufrufen
 2. Wenn die Anmeldung abgelaufen ist, mit dem HA-Account sich erneut anmelden
 3. In der linken Menüleiste den Menüpunkt *Repos* auswählen
@@ -198,9 +200,9 @@ Nur weil wir eine `azure-pipelines.yml` Datei erstellt haben, existiert noch kei
 2. Auf *Create Pipeline* klicken
 3. Die Frage *Where is your code?* mit *Azure Repos Git* beantworten
 4. Euer Repository in der Liste auswählen
-5. Da wird bereits eine YAML-Datei in einem Branch haben, wählen wir *Existing Azure Pipelines YAML file* aus
+5. Da wir bereits eine YAML-Datei in einem Branch haben, wählen wir *Existing Azure Pipelines YAML file* aus
 6. Beim *Branch* selektieren wir `feature/initial-pipeline` und beim *Path* `/azure-pipelines.yml`
-7. Mit Klick auf *Run* führen wird die Pipeline aus.
+7. Mit Klick auf *Run* führen wir die Pipeline aus.
 
 <details>
 <summary>Lösungshinweis</summary>
@@ -247,6 +249,7 @@ You updated feature/initial-pipeline 35m ago
 **PR approven**
 
 Wenn der PR gut ist, kann dieser *Approved* werden. Anschliessend wird mit Klick auf *Complete* der PR in den Main-Branch gemergt und geschlossen. Bevor der PR geschlossen wird, gibt es noch zwei wichtige Einstellungen:
+
 1. *Merge type* definiert, welche Merge Strategie angewendet wird. *Merge (no fast forwards)* führt dazu, dass alle Commits im Feature-Branch auf dem Main-Branch sichtbar sind. Das kann bei sehr vielen Commits zu Unschönheiten führen. *Squash commit* adressiert diese Problematik, indem alle Feature-Branch-Commits zu genau einem *quetschten* Commit auf dem Main-Branch führt. Die Merge Strategie wird innerhalb eines Teams definiert. Wir verwenden *Squash commit*.
 2. Aktiviert, dass der Feature-Branch nach dem Mergen gelöscht wird (*Delete feature/initial-pipeline after merging*). So bleiben keine Feature-Branch-Leichen übrig.
 
